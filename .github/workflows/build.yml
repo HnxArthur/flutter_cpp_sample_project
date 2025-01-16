@@ -1,0 +1,98 @@
+name: Build C/C++ and Flutter for All Platforms
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      # Step 1: Checkout the code
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # Step 2: Set up the environment
+      - name: Set up environment
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gcc mingw-w64 clang unzip
+
+      # Step 3: Set up Android NDK
+      - name: Set up Android NDK
+        run: |
+          wget https://dl.google.com/android/repository/android-ndk-r21e-linux-x86_64.zip
+          unzip android-ndk-r21e-linux-x86_64.zip
+          export ANDROID_NDK_HOME=$(pwd)/android-ndk-r21e
+
+      # Step 4: Build C/C++ libraries
+      - name: Build C/C++ libraries
+        run: |
+          make -C native all
+
+      # Step 5: Set up Flutter
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+
+      # Step 6: Build Flutter app for all platforms
+      - name: Build Flutter app for Android
+        run: |
+          cd flutter_app
+          flutter build apk --release
+
+      - name: Build Flutter app for Linux
+        run: |
+          cd flutter_app
+          flutter build linux --release
+
+      - name: Build Flutter app for Windows
+        run: |
+          cd flutter_app
+          flutter build windows --release
+
+      - name: Build Flutter app for macOS
+        run: |
+          cd flutter_app
+          flutter build macos --release
+
+      - name: Build Flutter app for iOS
+        run: |
+          cd flutter_app
+          flutter build ios --release --no-codesign
+
+      # Step 7: Upload artifacts
+      - name: Upload C/C++ libraries
+        uses: actions/upload-artifact@v3
+        with:
+          name: cpp-libraries
+          path: native/build/
+
+      - name: Upload Flutter Android APK
+        uses: actions/upload-artifact@v3
+        with:
+          name: flutter-android-apk
+          path: flutter_app/build/app/outputs/flutter-apk/app-release.apk
+
+      - name: Upload Flutter Linux bundle
+        uses: actions/upload-artifact@v3
+        with:
+          name: flutter-linux-bundle
+          path: flutter_app/build/linux/release/bundle/
+
+      - name: Upload Flutter Windows bundle
+        uses: actions/upload-artifact@v3
+        with:
+          name: flutter-windows-bundle
+          path: flutter_app/build/windows/runner/Release/
+
+      - name: Upload Flutter macOS bundle
+        uses: actions/upload-artifact@v3
+        with:
+          name: flutter-macos-bundle
+          path: flutter_app/build/macos/Build/Products/Release/
+
+      - name: Upload Flutter iOS bundle
+        uses: actions/upload-artifact@v3
+        with:
+          name: flutter-ios-bundle
+          path: flutter_app/build/ios/Release/
