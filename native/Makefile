@@ -1,9 +1,9 @@
 # Makefile for building C/C++ shared libraries for all platforms
 
 # Directories
-SRC_DIR = native
-BUILD_DIR = native/build
-FLUTTER_APP_DIR = flutter_app
+SRC_DIR = .
+BUILD_DIR = build
+FLUTTER_APP_DIR = ../flutter_app
 
 # Compilers
 CC_LINUX = gcc
